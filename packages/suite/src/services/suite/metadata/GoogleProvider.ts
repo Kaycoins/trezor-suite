@@ -17,6 +17,7 @@ class GoogleProvider extends AbstractMetadataProvider {
             this.connected = true;
             return true;
         } catch (error) {
+            console.log('error', error);
             return false;
         }
     }
