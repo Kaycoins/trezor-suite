@@ -40,7 +40,11 @@ const Row = styled.div`
     }
 `;
 
-const Outputs = () => {
+interface Props {
+    disableAnim?: boolean; // used in tests, with animations enabled react-testing-library can't find output fields
+}
+
+const Outputs = ({ disableAnim }: Props) => {
     const { outputs } = useSendFormContext();
     const [renderedOutputs, setRenderedOutputs] = useState(1);
     const lastOutputRef = useRef<HTMLDivElement | null>(null);
@@ -62,36 +66,45 @@ const Outputs = () => {
         }
     }, [outputs.length, renderedOutputs, setRenderedOutputs]);
 
+    const WrapperComponent = disableAnim ? Wrapper : AnimatePresence;
     return (
-        <AnimatePresence initial={false}>
-            <Wrapper>
-                {outputs.map((output, index) => (
+        <WrapperComponent initial={false}>
+            {outputs.map((output, index) => {
+                const outputComponent = (
+                    <OutputWrapper
+                        ref={index === outputs.length - 1 ? lastOutputRef : undefined} // set ref to last output
+                        index={index}
+                        key={output.id}
+                    >
+                        {output.type === 'opreturn' ? (
+                            <OpReturn outputId={index} />
+                        ) : (
+                            <>
+                                <Row>
+                                    <Address outputId={index} outputsCount={outputs.length} />
+                                </Row>
+                                <Row>
+                                    <Amount outputId={index} />
+                                </Row>
+                            </>
+                        )}
+                    </OutputWrapper>
+                );
+
+                return disableAnim ? (
+                    outputComponent
+                ) : (
                     <motion.div
                         {...(outputs.length > 1 ? ANIMATION.EXPAND : {})} // do not animate if there is only 1 output, prevents animation on clear
-                        key={output.id}
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={index}
                         onAnimationComplete={onAddAnimationComplete}
                     >
-                        <OutputWrapper
-                            ref={index === outputs.length - 1 ? lastOutputRef : undefined} // set ref to last output
-                            index={index}
-                        >
-                            {output.type === 'opreturn' ? (
-                                <OpReturn outputId={index} />
-                            ) : (
-                                <>
-                                    <Row>
-                                        <Address outputId={index} outputsCount={outputs.length} />
-                                    </Row>
-                                    <Row>
-                                        <Amount outputId={index} />
-                                    </Row>
-                                </>
-                            )}
-                        </OutputWrapper>
+                        {outputComponent}
                     </motion.div>
-                ))}
-            </Wrapper>
-        </AnimatePresence>
+                );
+            })}
+        </WrapperComponent>
     );
 };
 

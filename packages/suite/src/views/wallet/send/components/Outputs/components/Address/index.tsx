@@ -49,7 +49,7 @@ const Address = ({ outputId, outputsCount }: { outputId: number; outputsCount: n
     const { openQrModal } = useActions({ openQrModal: scanQrRequest });
 
     // TODO: There is no guarantee that using arbitrary integer as an index won't result in undefined
-    // if (!outputs[outputId]) return null;
+    if (!outputs[outputId]) return null;
 
     const { descriptor, networkType, symbol } = account;
     const inputName = `outputs[${outputId}].address`;

@@ -91,7 +91,7 @@ const Amount = ({ outputId }: { outputId: number }) => {
     } = useSendFormContext();
 
     // TODO: There is no guarantee that using arbitrary integer as an index won't result in undefined
-    // if (!outputs[outputId]) return null;
+    if (!outputs[outputId]) return null;
 
     const inputName = `outputs[${outputId}].amount`;
     const tokenInputName = `outputs[${outputId}].token`;
