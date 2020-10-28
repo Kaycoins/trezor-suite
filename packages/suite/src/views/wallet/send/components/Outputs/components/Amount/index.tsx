@@ -60,7 +60,7 @@ const StyledTransferIcon = styled(Icon)`
     }
 `;
 const TransferIconWrapper = styled.div`
-    margin: 45px 10px 0px 10px;
+    margin: 50px 20px 0px 20px;
 
     @media all and (max-width: ${variables.SCREEN_SIZE.LG}) {
         /* transform: rotate(90deg); */
@@ -89,6 +89,9 @@ const Amount = ({ outputId }: { outputId: number }) => {
         calculateFiat,
         composeTransaction,
     } = useSendFormContext();
+
+    // TODO: There is no guarantee that using arbitrary integer as an index won't result in undefined
+    // if (!outputs[outputId]) return null;
 
     const inputName = `outputs[${outputId}].amount`;
     const tokenInputName = `outputs[${outputId}].token`;
@@ -229,7 +232,8 @@ const Amount = ({ outputId }: { outputId: number }) => {
                                 <TransferIconWrapper>
                                     <StyledTransferIcon
                                         icon="TRANSFER"
-                                        color={colors.NEUE_TYPE_LIGHT_GREY}
+                                        size={16}
+                                        color={colors.NEUE_TYPE_DARK_GREY}
                                     />
                                 </TransferIconWrapper>
                                 <Right>

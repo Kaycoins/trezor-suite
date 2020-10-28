@@ -46,8 +46,12 @@ const Address = ({ outputId, outputsCount }: { outputId: number; outputsCount: n
         errors,
         setValue,
     } = useSendFormContext();
-    const { descriptor, networkType, symbol } = account;
     const { openQrModal } = useActions({ openQrModal: scanQrRequest });
+
+    // TODO: There is no guarantee that using arbitrary integer as an index won't result in undefined
+    // if (!outputs[outputId]) return null;
+
+    const { descriptor, networkType, symbol } = account;
     const inputName = `outputs[${outputId}].address`;
     const outputError = errors.outputs ? errors.outputs[outputId] : undefined;
     const addressError = outputError ? outputError.address : undefined;
