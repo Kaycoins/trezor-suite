@@ -70,7 +70,13 @@ const AddWalletButton = ({ device, instances, addDeviceInstance, selectDeviceIns
                               })
                     }
                 >
-                    <Translation id="TR_ADD_WALLET" />
+                    {/* check if users has standard wallet enabled 
+                     (device.useEmptyPassphrase === true) means that standard wallet is enabled */}
+                    {device.useEmptyPassphrase ? (
+                        <Translation id="TR_ADD_HIDDEN_WALLET" />
+                    ) : (
+                        <Translation id="TR_ADD_WALLET" />
+                    )}
                 </StyledButton>
             </StyledTooltip>
         </AddWallet>
