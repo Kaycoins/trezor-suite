@@ -69,8 +69,12 @@ const Outputs = ({ disableAnim }: Props) => {
     const WrapperComponent = disableAnim ? Wrapper : AnimatePresence;
     return (
         <WrapperComponent initial={false}>
-            {outputs.map((output, index) => {
-                const outputComponent = (
+            {outputs.map((output, index) => (
+                <motion.div
+                    {...(outputs.length > 1 && !disableAnim ? ANIMATION.EXPAND : {})} // do not animate if there is only 1 output, prevents animation on clear
+                    key={output.id}
+                    onAnimationComplete={onAddAnimationComplete}
+                >
                     <OutputWrapper
                         ref={index === outputs.length - 1 ? lastOutputRef : undefined} // set ref to last output
                         index={index}
@@ -89,21 +93,8 @@ const Outputs = ({ disableAnim }: Props) => {
                             </>
                         )}
                     </OutputWrapper>
-                );
-
-                return disableAnim ? (
-                    outputComponent
-                ) : (
-                    <motion.div
-                        {...(outputs.length > 1 ? ANIMATION.EXPAND : {})} // do not animate if there is only 1 output, prevents animation on clear
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={index}
-                        onAnimationComplete={onAddAnimationComplete}
-                    >
-                        {outputComponent}
-                    </motion.div>
-                );
-            })}
+                </motion.div>
+            ))}
         </WrapperComponent>
     );
 };
