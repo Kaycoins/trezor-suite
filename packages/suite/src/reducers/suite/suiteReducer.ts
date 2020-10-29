@@ -21,6 +21,7 @@ interface Flags {
     // pinCompleted: boolean;
     // passphraseCompleted: boolean;
     discreetModeCompleted: boolean;
+    forcedRememberDevice: boolean;
 }
 
 interface SuiteSettings {
@@ -55,6 +56,7 @@ const initialState: SuiteState = {
         // pinCompleted: false;
         // passphraseCompleted: false;
         discreetModeCompleted: false,
+        forcedRememberDevice: false,
     },
     settings: {
         language: 'en',

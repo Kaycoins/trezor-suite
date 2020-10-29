@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
-import { useSelector } from '@suite-hooks';
+import { useSelector, useActions } from '@suite-hooks';
 import { Account } from '@wallet-types';
 import { variables } from '@trezor/components';
 import { useCoinmarketRedirect } from '@wallet-hooks/useCoinmarketRedirect';
 import { Translation } from '@suite-components';
+import * as coinmarketCommonActions from '@wallet-actions/coinmarketCommonActions';
 
 const Wrapper = styled.div`
     display: flex;
@@ -19,8 +20,12 @@ const Wrapper = styled.div`
 const CoinmarketRedirect = () => {
     const { redirectToOffers, redirectToDetail } = useCoinmarketRedirect();
     const router = useSelector(state => state.router);
+    const { forgetForcedRememberDevice } = useActions({
+        forgetForcedRememberDevice: coinmarketCommonActions.forgetForcedRememberDevice,
+    });
 
     useEffect(() => {
+        forgetForcedRememberDevice();
         // get rid of parameters appended by some partners to url which we pass to them
         const params = router?.hash?.split('?')[0].split('/');
         if (!params) return;
@@ -46,7 +51,7 @@ const CoinmarketRedirect = () => {
         if (redirectCommonParams.routeType === 'detail') {
             redirectToDetail({ ...redirectCommonParams, transactionId: params[4] });
         }
-    }, [redirectToOffers, redirectToDetail, router]);
+    }, [redirectToOffers, redirectToDetail, router, forgetForcedRememberDevice]);
 
     return (
         <Wrapper>

@@ -236,6 +236,7 @@ const initialRun = [
                 initialRun: false,
                 initialWebRun: false,
                 discreetModeCompleted: false,
+                forcedRememberDevice: false,
             },
         },
     },

@@ -1,8 +1,11 @@
 import TrezorConnect, { UI, ButtonRequestMessage } from 'trezor-connect';
 import * as modalActions from '@suite-actions/modalActions';
 import * as notificationActions from '@suite-actions/notificationActions';
+import * as suiteActions from '@suite-actions/suiteActions';
 import { COINMARKET_BUY } from './constants';
 import { Dispatch, GetState } from '@suite-types';
+import { BuyTradeFormResponse } from 'invity-api';
+import { submitRequestForm as utilsSubmitRequestForm } from '@wallet-utils/coinmarket/buyUtils';
 
 export const verifyAddress = (path: string, address: string) => async (
     dispatch: Dispatch,
@@ -89,5 +92,29 @@ export const verifyAddress = (path: string, address: string) => async (
                 error: response.payload.error,
             }),
         );
+    }
+};
+
+export const submitRequestForm = (tradeForm: BuyTradeFormResponse) => async (
+    dispatch: Dispatch,
+    getState: GetState,
+) => {
+    const { device } = getState().suite;
+    if (device && !device.remember) {
+        dispatch(suiteActions.setFlag('forcedRememberDevice', true));
+        dispatch(suiteActions.rememberDevice(device));
+    }
+    utilsSubmitRequestForm(tradeForm);
+};
+
+export const forgetForcedRememberDevice = () => (dispatch: Dispatch, getState: GetState) => {
+    const { forcedRememberDevice } = getState().suite.flags;
+    if (forcedRememberDevice) {
+        const { device } = getState().suite;
+        dispatch(suiteActions.setFlag('forcedRememberDevice', false));
+        if (device && device.remember) {
+            // suiteActions.rememberDevice works like a toggle
+            dispatch(suiteActions.rememberDevice(device));
+        }
     }
 };
