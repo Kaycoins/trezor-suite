@@ -1,5 +1,6 @@
 import path from 'path';
 import { spawn, ChildProcess } from 'child_process';
+import isDev from 'electron-is-dev';
 import { RESOURCES } from '../constants';
 
 export type Status = {
@@ -56,7 +57,7 @@ class BaseProcess {
             RESOURCES,
             'bin',
             this.resourceName,
-            system,
+            isDev ? system : '',
             `${this.processName}${ext}`,
         );
         this.process = spawn(processPath, params);
@@ -66,10 +67,28 @@ class BaseProcess {
      * Stops the process
      */
     async stop() {
-        if (this.process) {
-            this.process.kill('SIGINT');
-            this.process = null;
-        }
+        return new Promise(resolve => {
+            if (!this.process) {
+                resolve();
+                return;
+            }
+
+            this.process.kill();
+
+            setTimeout(() => {
+                if (!this.process) {
+                    resolve();
+                    return;
+                }
+
+                if (!this.process.killed) {
+                    this.process.kill('SIGINT');
+                }
+
+                this.process = null;
+                resolve();
+            }, 3000);
+        });
     }
 
     /**

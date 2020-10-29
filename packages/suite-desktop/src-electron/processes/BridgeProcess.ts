@@ -14,7 +14,6 @@ class BridgeProcess extends BaseProcess {
         // service
         try {
             const resp = await fetch(`http://127.0.0.1:21325/status/`);
-            console.log(resp);
             if (resp.status === 200) {
                 return {
                     service: true,
