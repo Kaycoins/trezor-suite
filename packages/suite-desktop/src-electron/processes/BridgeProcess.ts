@@ -1,13 +1,12 @@
 import fetch from 'node-fetch';
 
 import BaseProcess, { Status } from './BaseProcess';
-import { isProcessRunning, getPlatformName } from '../utils/process';
 
 class BridgeProcess extends BaseProcess {
     constructor() {
         super();
 
-        this.processName = `trezord-${getPlatformName()}-x64`;
+        this.processName = `trezord`;
         this.resourceName = 'bridge';
     }
 
@@ -15,6 +14,7 @@ class BridgeProcess extends BaseProcess {
         // service
         try {
             const resp = await fetch(`http://127.0.0.1:21325/status/`);
+            console.log(resp);
             if (resp.status === 200) {
                 return {
                     service: true,
@@ -26,15 +26,14 @@ class BridgeProcess extends BaseProcess {
         }
 
         // process
-        const running = await isProcessRunning(this.processName);
         return {
             service: false,
-            process: running,
+            process: Boolean(this.process),
         };
     }
 
-    async startDev(force = false): Promise<void> {
-        await this.start(force, ['-e', '21324']);
+    async startDev(): Promise<void> {
+        await this.start(['-e', '21324']);
     }
 }
 

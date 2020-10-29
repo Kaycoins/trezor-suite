@@ -1,6 +1,5 @@
 import path from 'path';
-
-import { getPlatformExt, killProcess, runProcess } from '../utils/process';
+import { spawn, ChildProcess } from 'child_process';
 import { RESOURCES } from '../constants';
 
 export type Status = {
@@ -9,9 +8,14 @@ export type Status = {
 };
 
 class BaseProcess {
-    processName = '';
+    process: ChildProcess | null;
     resourceName = '';
-    runBySuite = false;
+    processName = '';
+    supportedSystems = ['linux-x64', 'mac-x64', 'win-x64'];
+
+    constructor() {
+        this.process = null;
+    }
 
     /**
      * Returns the status of the service/process
@@ -27,59 +31,78 @@ class BaseProcess {
 
     /**
      * Start the bundled process
-     * @param force Force the launch (will also terminate any other processes with that name)
      * @param params Command line parameters for the process
      */
-    async start(force = false, params: string[] = []) {
+    async start(params: string[] = []) {
         const { process, service } = await this.status();
 
         // Service is running, nothing to do
-        if (!force && service) {
+        if (service) {
             return;
         }
 
         // If the process is running but the service isn't
-        if (process || force) {
+        if (process) {
             // Stop the process
-            await this.stop(!force);
+            await this.stop();
         }
 
-        const extension = getPlatformExt();
-        const processPath = path.join(RESOURCES, this.resourceName, this.processName);
-        await runProcess(`${processPath}${extension}`, params);
-        this.runBySuite = true;
+        const { system, ext } = this.getPlatformInfo();
+        if (!this.isSystemSupported(system)) {
+            throw new Error(`[${this.resourceName}] unsupported system (${system})`);
+        }
+
+        const processPath = path.join(
+            RESOURCES,
+            'bin',
+            this.resourceName,
+            system,
+            `${this.processName}${ext}`,
+        );
+        this.process = spawn(processPath, params);
     }
 
     /**
      * Stops the process
-     * @param onlySub Only terminate the bundled process
      */
-    async stop(onlySub = true) {
-        if (onlySub && !this.runBySuite) {
-            return;
+    async stop() {
+        if (this.process) {
+            this.process.kill('SIGINT');
+            this.process = null;
         }
-
-        const { process } = await this.status();
-        if (!process) {
-            return;
-        }
-
-        await killProcess(this.processName);
     }
 
     /**
      * Restart the process
      * @param force Force the restart
      */
-    async restart(force = false) {
-        // No need to stop it if force is false because start will
-        // kill the process anyway before starting it when its force
-        // parameter is true.
-        if (!force) {
-            await this.stop();
-        }
+    async restart() {
+        await this.stop();
+        await this.start();
+    }
 
-        await this.start(force);
+    ///
+    isSystemSupported(system: string) {
+        return this.supportedSystems.includes(system);
+    }
+
+    getPlatformInfo() {
+        const { arch } = process;
+        const platform = this.getPlatform();
+        const ext = platform === 'win' ? '.exe' : '';
+        const system = `${platform}-${arch}`;
+        return { system, platform, arch, ext };
+    }
+
+    getPlatform() {
+        switch (process.platform) {
+            case 'darwin':
+                return 'mac';
+            case 'win32':
+                return 'win';
+            default:
+                return process.platform;
+        }
     }
 }
 

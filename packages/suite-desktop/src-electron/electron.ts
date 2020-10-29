@@ -11,6 +11,7 @@ import { buildMainMenu } from './menu';
 import { HttpReceiver } from './http-receiver';
 import * as metadata from './metadata';
 import { buyRedirectHandler } from './buy';
+import { RESOURCES } from './constants';
 
 import BridgeProcess from './processes/BridgeProcess';
 
@@ -18,7 +19,6 @@ let initRun = false;
 let mainWindow: BrowserWindow;
 const APP_NAME = 'Trezor Suite';
 const PROTOCOL = 'file';
-const res = isDev ? './public/static' : process.resourcesPath;
 const src = isDev
     ? 'http://localhost:8000/'
     : url.format({
@@ -30,7 +30,6 @@ const src = isDev
 // Runtime flags
 const disableCspFlag = app.commandLine.hasSwitch('disable-csp');
 const preReleaseFlag = app.commandLine.hasSwitch('pre-release');
-const forceBridge = app.commandLine.hasSwitch('force-bridge');
 
 // Updater
 const updateCancellationToken = new CancellationToken();
@@ -75,7 +74,7 @@ const notifyWindowMaximized = (window: BrowserWindow) => {
 
 const init = async () => {
     try {
-        await bridge.start(forceBridge);
+        await bridge.start();
     } catch {
         //
     }
@@ -103,7 +102,7 @@ const init = async () => {
             enableRemoteModule: false,
             preload: path.join(__dirname, 'preload.js'),
         },
-        icon: path.join(res, 'images', 'icons', '512x512.png'),
+        icon: path.join(RESOURCES, 'images', 'icons', '512x512.png'),
     });
 
     // Security warnings
@@ -350,9 +349,9 @@ app.on('browser-window-focus', (_event, win) => {
 ipcMain.on('bridge/start', async (_event, devMode?: boolean) => {
     try {
         if (devMode) {
-            await bridge.startDev(forceBridge);
+            await bridge.startDev();
         } else {
-            await bridge.start(forceBridge);
+            await bridge.start();
         }
     } catch (error) {
         // TODO: return error message to suite?
